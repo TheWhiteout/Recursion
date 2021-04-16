@@ -1,5 +1,7 @@
 import java.awt.Graphics;
 import java.util.ArrayList;
+import java.util.PriorityQueue;
+
 import javax.swing.Timer;
 import java.awt.*;
 import javax.swing.*;
@@ -9,7 +11,8 @@ import javax.swing.JPanel;
 
 class BallPanel extends JPanel {
 	private int delay = 10;
-	static ArrayList<Ball> list = new ArrayList<Ball>();
+	// static ArrayList<Ball> list = new ArrayList<Ball>();
+	static PriorityQueue<Ball> q = new PriorityQueue<Ball>();
 // Create a timer with the initial delay
 	protected Timer timer = new Timer(delay, new TimerListener());
 
@@ -25,19 +28,18 @@ class BallPanel extends JPanel {
 	}
 
 	public void add() {
-		list.add(new Ball());
+		q.offer(new Ball());
 	}
 
 	public void subtract() {
-		if (list.size() > 0)
-			list.remove(list.size() - 1); // Remove the last ball
+		if (q.size() > 0)
+			q.poll(); // Remove the last ball
 	}
 
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		for (int i = 0; i < list.size(); i++) {
-			Ball ball = (Ball) list.get(i); // Get a ball
+		for (Ball ball : q) {
 			g.setColor(ball.color); // Set ball color
 			// Check boundaries
 			if (ball.x < 0 || ball.x > getWidth())
@@ -49,16 +51,20 @@ class BallPanel extends JPanel {
 			ball.y += ball.dy;
 			g.fillOval(ball.x - ball.radius, ball.y - ball.radius, ball.radius * 2, ball.radius * 2);
 		}
-		for (int i = 0; i < list.size() - 1; i++) {
-			Ball ball = (Ball) list.get(i);
-			for (int j = i + 1; j < list.size(); j++) {
-				Ball ball1 = (Ball) list.get(j);
-				if (collision(ball, ball1)) {
-					ball.radius += ball1.radius;
-					list.remove(ball1);
+		ArrayList<Ball> deadBalls = new ArrayList<Ball>();
+		for (Ball ball : q) {
+			if (!deadBalls.contains(ball)) {
+				for (Ball ball1 : q) {
+					if (ball != ball1) {
+						if (collision(ball, ball1)) {
+							ball.radius += ball1.radius;
+							deadBalls.add(ball1);
+						}
+					}
 				}
 			}
 		}
+		q.removeAll(deadBalls);
 	}
 
 	public boolean collision(Ball b1, Ball b2) {

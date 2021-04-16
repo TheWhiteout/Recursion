@@ -54,10 +54,9 @@ public class BallControl extends JPanel {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				for (int i = 0; i < BallPanel.list.size(); i++) {
-					Ball ball = (Ball) BallPanel.list.get(i);
+				for (Ball ball : BallPanel.q) {
 					if (ballPanel.collision(ball.x, ball.y, ball.radius, e.getX(), e.getY(), 0)) {
-						BallPanel.list.remove(ball);
+						BallPanel.q.remove(ball);
 					}
 				}
 			}
